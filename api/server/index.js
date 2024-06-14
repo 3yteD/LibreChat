@@ -17,6 +17,7 @@ const configureSocialLogins = require('./socialLogins');
 const AppService = require('./services/AppService');
 const noIndex = require('./middleware/noIndex');
 const routes = require('./routes');
+const webhookRoutes = require('./routes/webhookRoutes');
 
 const { PORT, HOST, ALLOW_SOCIAL_LOGIN } = process.env ?? {};
 
@@ -39,8 +40,6 @@ const startServer = async () => {
 
   // Middleware
   app.use(noIndex);
-  app.use(errorController);
-  app.use(express.json({ limit: '3mb' }));
   app.use(mongoSanitize());
   app.use(express.urlencoded({ extended: true, limit: '3mb' }));
   app.use(express.static(app.locals.paths.dist));
@@ -48,7 +47,10 @@ const startServer = async () => {
   app.use(express.static(app.locals.paths.assets));
   app.set('trust proxy', 1); // trust first proxy
   app.use(cors());
-
+  app.use('/webhook', webhookRoutes);
+  app.use(express.json({ limit: '3mb' }));
+  //app.use('/webhook', express.raw({ type: 'application/json' }), webhookRoutes);
+  app.use(errorController);
   if (!ALLOW_SOCIAL_LOGIN) {
     console.warn(
       'Social logins are disabled. Set Environment Variable "ALLOW_SOCIAL_LOGIN" to true to enable them.',

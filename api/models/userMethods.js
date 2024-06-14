@@ -157,6 +157,38 @@ const comparePassword = async (user, candidatePassword) => {
     });
   });
 };
+const validSubscriptionStatuses = ['active', 'canceled', 'expired', 'trialing'];
+
+/**
+ * Update the subscription status of a user identified by their Stripe customer ID.
+ *
+ * @param {string} stripeCustomerId - The Stripe customer ID associated with the user.
+ * @param {string} subscriptionStatus - The new subscription status to set for the user.
+ * @returns {Promise<Object>} - The result of the update operation.
+ */
+const updateUserSubscriptionStatus = async (stripeCustomerId, subscriptionStatus) => {
+  try {
+    // Check if subscriptionStatus is valid
+    if (!validSubscriptionStatuses.includes(subscriptionStatus)) {
+      return { success: false, error: 'Invalid subscription status' };
+    }
+
+    // Find the user by their Stripe customer ID
+    let user = await User.findOne({ stripeCustomerId });
+    if (!user) {
+      // If the user does not exist, handle the case appropriately (e.g., create a new user or log a warning)
+      return { success: false, error: 'User not found' };
+    }
+
+    // Update subscription status
+    user.subscriptionStatus = subscriptionStatus;
+    const updatedUser = await user.save();
+
+    return { success: true, user: updatedUser };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
 
 module.exports = {
   comparePassword,
@@ -167,4 +199,5 @@ module.exports = {
   createUser,
   updateUser,
   findUser,
+  updateUserSubscriptionStatus,
 };
