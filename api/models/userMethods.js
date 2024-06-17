@@ -157,7 +157,7 @@ const comparePassword = async (user, candidatePassword) => {
     });
   });
 };
-const validSubscriptionStatuses = ['active', 'canceled', 'expired', 'trialing'];
+const validSubscriptionStatuses = ['active', 'inactive'];
 
 /**
  * Update the subscription status of a user identified by their Stripe customer ID.
@@ -182,7 +182,12 @@ const updateUserSubscriptionStatus = async (stripeCustomerId, subscriptionStatus
 
     // Update subscription status
     user.subscriptionStatus = subscriptionStatus;
-    const updatedUser = await user.save();
+    if (subscriptionStatus === 'active') {
+      user.messageBalance += 100; // Add 100 messages to balance for active users
+      user.lastPaymentDate = new Date(); // Set the last payment date to the current date
+    }
+
+    const updatedUser = await user.save(); // Save the user and get the updated user
 
     return { success: true, user: updatedUser };
   } catch (error) {

@@ -121,6 +121,16 @@ const userSchema = mongoose.Schema(
       type: Date,
       expires: 604800, // 7 days in seconds
     },
+    messageBalance: {
+      // New field to track message balance
+      type: Number,
+      default: 2,
+    }, // Added this line
+    lastPaymentDate: {
+      // New field to track the date of the last payment
+      type: Date,
+      default: null,
+    }, // Added this line
   },
   { timestamps: true },
 );
